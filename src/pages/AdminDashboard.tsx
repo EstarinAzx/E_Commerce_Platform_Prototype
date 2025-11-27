@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Trash2, Plus } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface Product {
     id: string;
@@ -22,6 +23,7 @@ interface User {
 }
 
 export default function AdminDashboard() {
+    const { user, logout } = useAuth();
     const [activeTab, setActiveTab] = useState<'products' | 'users'>('products');
     const [products, setProducts] = useState<Product[]>([]);
     const [users, setUsers] = useState<User[]>([]);
@@ -86,13 +88,26 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleDeleteUser = async (id: string) => {
-        if (!confirm('Delete this user?')) return;
+    const handleDeleteUser = async (id: string, email: string) => {
+        const isSelfDelete = user?.id === id;
+
+        const confirmMessage = isSelfDelete
+            ? `⚠️ WARNING: You are about to delete your own account (${email})!\n\nThis will:\n• Log you out immediately\n• Permanently delete your account\n• Cannot be undone\n\nAre you absolutely sure?`
+            : `Are you sure you want to delete the user "${email}"?\n\nThis action cannot be undone.`;
+
+        if (!confirm(confirmMessage)) return;
+
         try {
             await fetch(`http://localhost:3000/api/users/${id}`, {
                 method: 'DELETE',
             });
-            fetchUsers();
+
+            // If user deleted themselves, log them out immediately
+            if (isSelfDelete) {
+                logout();
+            } else {
+                fetchUsers();
+            }
         } catch (error) {
             console.error('Failed to delete user:', error);
         }
@@ -112,8 +127,8 @@ export default function AdminDashboard() {
                     <button
                         onClick={() => setActiveTab('products')}
                         className={`px-4 py-2 font-medium transition-colors ${activeTab === 'products'
-                                ? 'border-b-2 border-primary text-primary'
-                                : 'text-muted-foreground hover:text-foreground'
+                            ? 'border-b-2 border-primary text-primary'
+                            : 'text-muted-foreground hover:text-foreground'
                             }`}
                     >
                         Products
@@ -121,8 +136,8 @@ export default function AdminDashboard() {
                     <button
                         onClick={() => setActiveTab('users')}
                         className={`px-4 py-2 font-medium transition-colors ${activeTab === 'users'
-                                ? 'border-b-2 border-primary text-primary'
-                                : 'text-muted-foreground hover:text-foreground'
+                            ? 'border-b-2 border-primary text-primary'
+                            : 'text-muted-foreground hover:text-foreground'
                             }`}
                     >
                         Users
@@ -229,25 +244,25 @@ export default function AdminDashboard() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {users.map((user) => (
-                                        <tr key={user.id} className="border-b last:border-0">
-                                            <td className="px-6 py-4">{user.email}</td>
-                                            <td className="px-6 py-4">{user.name}</td>
+                                    {users.map((userItem) => (
+                                        <tr key={userItem.id} className="border-b last:border-0">
+                                            <td className="px-6 py-4">{userItem.email}</td>
+                                            <td className="px-6 py-4">{userItem.name}</td>
                                             <td className="px-6 py-4">
                                                 <span
-                                                    className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${user.role === 'ADMIN'
-                                                            ? 'bg-primary/10 text-primary'
-                                                            : 'bg-muted text-muted-foreground'
+                                                    className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${userItem.role === 'ADMIN'
+                                                        ? 'bg-primary/10 text-primary'
+                                                        : 'bg-muted text-muted-foreground'
                                                         }`}
                                                 >
-                                                    {user.role}
+                                                    {userItem.role}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <Button
                                                     variant="destructive"
                                                     size="sm"
-                                                    onClick={() => handleDeleteUser(user.id)}
+                                                    onClick={() => handleDeleteUser(userItem.id, userItem.email)}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>

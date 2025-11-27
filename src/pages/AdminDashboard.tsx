@@ -6,12 +6,19 @@ import { Input } from '../components/Input';
 import { Trash2, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+interface Category {
+    id: string;
+    name: string;
+}
+
 interface Product {
     id: string;
     name: string;
     description: string;
     price: number;
     imageUrl: string;
+    categoryId?: string;
+    category?: Category;
 }
 
 interface User {
@@ -24,9 +31,10 @@ interface User {
 
 export default function AdminDashboard() {
     const { user, logout } = useAuth();
-    const [activeTab, setActiveTab] = useState<'products' | 'users'>('products');
+    const [activeTab, setActiveTab] = useState<'products' | 'users' | 'categories'>('products');
     const [products, setProducts] = useState<Product[]>([]);
     const [users, setUsers] = useState<User[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [showProductForm, setShowProductForm] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [uploading, setUploading] = useState(false);
@@ -35,11 +43,14 @@ export default function AdminDashboard() {
         description: '',
         price: '',
         imageUrl: '',
+        categoryId: '',
     });
+    const [newCategoryName, setNewCategoryName] = useState('');
 
     useEffect(() => {
         fetchProducts();
         fetchUsers();
+        fetchCategories();
     }, []);
 
     const fetchProducts = async () => {
@@ -59,6 +70,16 @@ export default function AdminDashboard() {
             setUsers(data);
         } catch (error) {
             console.error('Failed to fetch users:', error);
+        }
+    };
+
+    const fetchCategories = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/api/categories');
+            const data = await response.json();
+            setCategories(data);
+        } catch (error) {
+            console.error('Failed to fetch categories:', error);
         }
     };
 
@@ -84,7 +105,7 @@ export default function AdminDashboard() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newProduct),
             });
-            setNewProduct({ name: '', description: '', price: '', imageUrl: '' });
+            setNewProduct({ name: '', description: '', price: '', imageUrl: '', categoryId: '' });
             setShowProductForm(false);
             fetchProducts();
         } catch (error) {
@@ -150,6 +171,53 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleCreateCategory = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newCategoryName.trim()) return;
+
+        try {
+            await fetch('http://localhost:3000/api/categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newCategoryName }),
+            });
+            setNewCategoryName('');
+            fetchCategories();
+        } catch (error) {
+            console.error('Failed to create category:', error);
+        }
+    };
+
+    const handleDeleteCategory = async (id: string) => {
+        if (!confirm('Delete this category?')) return;
+        try {
+            await fetch(`http://localhost:3000/api/categories/${id}`, {
+                method: 'DELETE',
+            });
+            fetchCategories();
+        } catch (error) {
+            console.error('Failed to delete category:', error);
+        }
+    };
+
+    const handlePromoteUser = async (userId: string, currentRole: string) => {
+        const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN';
+        const action = newRole === 'ADMIN' ? 'promote to Admin' : 'demote to User';
+
+        if (!confirm(`Are you sure you want to ${action} this user?`)) return;
+
+        try {
+            await fetch(`http://localhost:3000/api/users/${userId}/role`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: newRole }),
+            });
+            fetchUsers();
+        } catch (error) {
+            console.error('Failed to update user role:', error);
+        }
+    };
+
     return (
         <Layout>
             <div className="space-y-6">
@@ -178,6 +246,15 @@ export default function AdminDashboard() {
                             }`}
                     >
                         Users
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('categories')}
+                        className={`px-4 py-2 font-medium transition-colors ${activeTab === 'categories'
+                            ? 'border-b-2 border-primary text-primary'
+                            : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                    >
+                        Categories
                     </button>
                 </div>
 
@@ -221,6 +298,25 @@ export default function AdminDashboard() {
                                             }
                                             required
                                         />
+                                        <div>
+                                            <label className="block text-sm font-medium mb-2">
+                                                Category
+                                            </label>
+                                            <select
+                                                value={newProduct.categoryId}
+                                                onChange={(e) =>
+                                                    setNewProduct({ ...newProduct, categoryId: e.target.value })
+                                                }
+                                                className="w-full px-3 py-2 rounded-md border bg-background"
+                                            >
+                                                <option value="">No Category</option>
+                                                {categories.map((category) => (
+                                                    <option key={category.id} value={category.id}>
+                                                        {category.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
                                         <div>
                                             <label className="block text-sm font-medium mb-2">
                                                 Product Image
@@ -382,6 +478,65 @@ export default function AdminDashboard() {
                     </div>
                 )}
 
+                {activeTab === 'categories' && (
+                    <div className="space-y-4">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Add Category</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <form onSubmit={handleCreateCategory} className="flex gap-2">
+                                    <Input
+                                        placeholder="Category name (e.g., Electronics, Clothing)"
+                                        value={newCategoryName}
+                                        onChange={(e) => setNewCategoryName(e.target.value)}
+                                        className="flex-1"
+                                        required
+                                    />
+                                    <Button type="submit">
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Add
+                                    </Button>
+                                </form>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Categories</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b">
+                                            <th className="px-6 py-3 text-left text-sm font-medium">Name</th>
+                                            <th className="px-6 py-3 text-left text-sm font-medium">ID</th>
+                                            <th className="px-6 py-3 text-right text-sm font-medium">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {categories.map((category) => (
+                                            <tr key={category.id} className="border-b">
+                                                <td className="px-6 py-4">{category.name}</td>
+                                                <td className="px-6 py-4 text-xs text-muted-foreground">{category.id}</td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => handleDeleteCategory(category.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
                 {activeTab === 'users' && (
                     <Card>
                         <CardContent className="p-0">
@@ -409,14 +564,23 @@ export default function AdminDashboard() {
                                                     {userItem.role}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <Button
-                                                    variant="destructive"
-                                                    size="sm"
-                                                    onClick={() => handleDeleteUser(userItem.id, userItem.email)}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex gap-2 justify-end">
+                                                    <Button
+                                                        variant={userItem.role === 'ADMIN' ? 'outline' : 'primary'}
+                                                        size="sm"
+                                                        onClick={() => handlePromoteUser(userItem.id, userItem.role)}
+                                                    >
+                                                        {userItem.role === 'ADMIN' ? 'Demote' : 'Promote'}
+                                                    </Button>
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => handleDeleteUser(userItem.id, userItem.email)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}

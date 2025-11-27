@@ -8,6 +8,7 @@ import Store from './pages/Store';
 import Checkout from './pages/Checkout';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminOrders from './pages/AdminOrders';
+import AdminStats from './pages/AdminStats';
 import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
@@ -48,6 +49,11 @@ export default function App() {
             <Route path="/admin/orders" element={
               <AdminRoute>
                 <AdminOrders />
+              </AdminRoute>
+            } />
+            <Route path="/admin/stats" element={
+              <AdminRoute>
+                <AdminStats />
               </AdminRoute>
             } />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

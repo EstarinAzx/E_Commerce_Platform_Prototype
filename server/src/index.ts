@@ -9,6 +9,7 @@ import uploadRoutes from './routes/upload';
 import cartRoutes from './routes/cart';
 import orderRoutes from './routes/orders';
 import categoryRoutes from './routes/categories';
+import adminRoutes from './routes/admin';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok' });

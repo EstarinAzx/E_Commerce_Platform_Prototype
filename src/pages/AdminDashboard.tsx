@@ -28,6 +28,8 @@ export default function AdminDashboard() {
     const [products, setProducts] = useState<Product[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [showProductForm, setShowProductForm] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [uploading, setUploading] = useState(false);
     const [newProduct, setNewProduct] = useState({
         name: '',
         description: '',
@@ -60,6 +62,20 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleImageUpload = async (file: File): Promise<string> => {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const response = await fetch('http://localhost:3000/api/upload', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) throw new Error('Upload failed');
+        const data = await response.json();
+        return data.imageUrl;
+    };
+
     const handleCreateProduct = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
@@ -73,6 +89,28 @@ export default function AdminDashboard() {
             fetchProducts();
         } catch (error) {
             console.error('Failed to create product:', error);
+        }
+    };
+
+    const handleUpdateProduct = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingProduct) return;
+
+        try {
+            await fetch(`http://localhost:3000/api/products/${editingProduct.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: editingProduct.name,
+                    description: editingProduct.description,
+                    price: editingProduct.price,
+                    imageUrl: editingProduct.imageUrl,
+                }),
+            });
+            setEditingProduct(null);
+            fetchProducts();
+        } catch (error) {
+            console.error('Failed to update product:', error);
         }
     };
 
@@ -102,7 +140,6 @@ export default function AdminDashboard() {
                 method: 'DELETE',
             });
 
-            // If user deleted themselves, log them out immediately
             if (isSelfDelete) {
                 logout();
             } else {
@@ -184,15 +221,117 @@ export default function AdminDashboard() {
                                             }
                                             required
                                         />
+                                        <div>
+                                            <label className="block text-sm font-medium mb-2">
+                                                Product Image
+                                            </label>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        setUploading(true);
+                                                        try {
+                                                            const url = await handleImageUpload(file);
+                                                            setNewProduct({ ...newProduct, imageUrl: url });
+                                                        } catch (error) {
+                                                            console.error('Upload failed:', error);
+                                                            alert('Image upload failed');
+                                                        } finally {
+                                                            setUploading(false);
+                                                        }
+                                                    }
+                                                }}
+                                                className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
+                                            />
+                                            {uploading && <p className="text-sm text-muted-foreground mt-2">Uploading...</p>}
+                                            {newProduct.imageUrl && (
+                                                <img src={newProduct.imageUrl} alt="Preview" className="mt-2 h-32 w-32 object-cover rounded" />
+                                            )}
+                                        </div>
+                                        <Button type="submit" disabled={uploading}>
+                                            {uploading ? 'Uploading...' : 'Create Product'}
+                                        </Button>
+                                    </form>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {editingProduct && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Edit Product</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <form onSubmit={handleUpdateProduct} className="space-y-4">
                                         <Input
-                                            label="Image URL"
-                                            value={newProduct.imageUrl}
+                                            label="Name"
+                                            value={editingProduct.name}
                                             onChange={(e) =>
-                                                setNewProduct({ ...newProduct, imageUrl: e.target.value })
+                                                setEditingProduct({ ...editingProduct, name: e.target.value })
                                             }
                                             required
                                         />
-                                        <Button type="submit">Create Product</Button>
+                                        <Input
+                                            label="Description"
+                                            value={editingProduct.description}
+                                            onChange={(e) =>
+                                                setEditingProduct({ ...editingProduct, description: e.target.value })
+                                            }
+                                            required
+                                        />
+                                        <Input
+                                            label="Price"
+                                            type="number"
+                                            step="0.01"
+                                            value={editingProduct.price.toString()}
+                                            onChange={(e) =>
+                                                setEditingProduct({ ...editingProduct, price: parseFloat(e.target.value) })
+                                            }
+                                            required
+                                        />
+                                        <div>
+                                            <label className="block text-sm font-medium mb-2">
+                                                Product Image
+                                            </label>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        setUploading(true);
+                                                        try {
+                                                            const url = await handleImageUpload(file);
+                                                            setEditingProduct({ ...editingProduct, imageUrl: url });
+                                                        } catch (error) {
+                                                            console.error('Upload failed:', error);
+                                                            alert('Image upload failed');
+                                                        } finally {
+                                                            setUploading(false);
+                                                        }
+                                                    }
+                                                }}
+                                                className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
+                                            />
+                                            {uploading && <p className="text-sm text-muted-foreground mt-2">Uploading...</p>}
+                                            {editingProduct.imageUrl && (
+                                                <img src={editingProduct.imageUrl} alt="Preview" className="mt-2 h-32 w-32 object-cover rounded" />
+                                            )}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button type="submit" disabled={uploading}>
+                                                {uploading ? 'Uploading...' : 'Update Product'}
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => setEditingProduct(null)}
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </div>
                                     </form>
                                 </CardContent>
                             </Card>
@@ -214,13 +353,25 @@ export default function AdminDashboard() {
                                                 <td className="px-6 py-4">{product.name}</td>
                                                 <td className="px-6 py-4">${product.price.toFixed(2)}</td>
                                                 <td className="px-6 py-4">
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() => handleDeleteProduct(product.id)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setEditingProduct(product);
+                                                                setShowProductForm(false);
+                                                            }}
+                                                        >
+                                                            Edit
+                                                        </Button>
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() => handleDeleteProduct(product.id)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}

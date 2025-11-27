@@ -33,13 +33,37 @@ router.post('/', async (req: Request, res: Response) => {
     }
 });
 
+// Update product
+router.put('/:id', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { name, description, price, imageUrl } = req.body;
+
+        const product = await prisma.product.update({
+            where: { id },
+            data: {
+                name,
+                description,
+                price: parseFloat(price),
+                imageUrl
+            },
+        });
+
+        res.json(product);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to update product' });
+    }
+});
+
 // Delete product
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
         await prisma.product.delete({ where: { id } });
-        res.json({ success: true });
+        res.json({ message: 'Product deleted' });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Failed to delete product' });
     }
 });

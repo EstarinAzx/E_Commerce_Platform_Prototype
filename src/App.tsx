@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Store from './pages/Store';
 import Checkout from './pages/Checkout';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminOrders from './pages/AdminOrders';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 
@@ -36,6 +37,11 @@ export default function App() {
             <Route path="/admin" element={
               <AdminRoute>
                 <AdminDashboard />
+              </AdminRoute>
+            } />
+            <Route path="/admin/orders" element={
+              <AdminRoute>
+                <AdminOrders />
               </AdminRoute>
             } />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

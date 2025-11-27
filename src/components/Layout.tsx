@@ -11,7 +11,8 @@ import {
     X,
     User,
     Bell,
-    ShoppingBag
+    ShoppingBag,
+    Package
 } from 'lucide-react';
 import { Button } from './Button';
 import CartSidebar from './CartSidebar';
@@ -29,6 +30,7 @@ export default function Layout({ children }: LayoutProps) {
     const navigation = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'Store', href: '/store', icon: User },
+        { name: 'Orders', href: '/admin/orders', icon: Package },
         { name: 'Admin', href: '/admin', icon: Settings },
     ];
 
@@ -67,7 +69,7 @@ export default function Layout({ children }: LayoutProps) {
 
                         <nav className="flex-1 p-4 space-y-1">
                             {navigation
-                                .filter(item => item.name !== 'Admin' || user?.role === 'ADMIN')
+                                .filter(item => (item.name !== 'Admin' && item.name !== 'Orders') || user?.role === 'ADMIN')
                                 .map((item) => {
                                     const Icon = item.icon;
                                     const isActive = location.pathname === item.href;

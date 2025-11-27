@@ -69,7 +69,7 @@ export default function Layout({ children }: LayoutProps) {
 
                         <nav className="flex-1 p-4 space-y-1">
                             {navigation
-                                .filter(item => (item.name !== 'Admin' && item.name !== 'Orders') || user?.role === 'ADMIN')
+                                .filter(item => (item.name !== 'Admin' && item.name !== 'Orders') || user?.role === 'ADMIN' || user?.role === 'SUPERADMIN')
                                 .map((item) => {
                                     const Icon = item.icon;
                                     const isActive = location.pathname === item.href;

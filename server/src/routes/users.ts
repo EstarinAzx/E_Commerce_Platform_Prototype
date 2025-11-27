@@ -115,13 +115,28 @@ router.put('/me/password', async (req: Request, res: Response) => {
     }
 });
 
-// Promote user to admin (Admin only)
+// Promote user to admin (SUPERADMIN only)
 router.patch('/:id/role', async (req: Request, res: Response) => {
     try {
+        const requesterId = req.headers['user-id'] as string;
+        if (!requesterId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        // Check if requester is SUPERADMIN
+        const requester = await prisma.user.findUnique({
+            where: { id: requesterId },
+            select: { role: true },
+        });
+
+        if (!requester || requester.role !== 'SUPERADMIN') {
+            return res.status(403).json({ error: 'Only SUPERADMIN can change user roles' });
+        }
+
         const { id } = req.params;
         const { role } = req.body;
 
-        if (!['USER', 'ADMIN'].includes(role)) {
+        if (!['USER', 'ADMIN', 'SUPERADMIN'].includes(role)) {
             return res.status(400).json({ error: 'Invalid role' });
         }
 

@@ -12,7 +12,7 @@ export default function AdminRoute({ children }: AdminRouteProps) {
         return <Navigate to="/login" replace />;
     }
 
-    if (user?.role !== 'ADMIN') {
+    if (user?.role !== 'ADMIN' && user?.role !== 'SUPERADMIN') {
         return <Navigate to="/dashboard" replace />;
     }
 

@@ -201,15 +201,29 @@ export default function AdminDashboard() {
     };
 
     const handlePromoteUser = async (userId: string, currentRole: string) => {
-        const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN';
-        const action = newRole === 'ADMIN' ? 'promote to Admin' : 'demote to User';
+        let newRole: string;
+        let action: string;
+
+        if (currentRole === 'SUPERADMIN') {
+            newRole = 'ADMIN';
+            action = 'demote to Admin';
+        } else if (currentRole === 'ADMIN') {
+            newRole = 'USER';
+            action = 'demote to User';
+        } else {
+            newRole = 'ADMIN';
+            action = 'promote to Admin';
+        }
 
         if (!confirm(`Are you sure you want to ${action} this user?`)) return;
 
         try {
             await fetch(`http://localhost:3000/api/users/${userId}/role`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'user-id': user?.id || '',
+                },
                 body: JSON.stringify({ role: newRole }),
             });
             fetchUsers();
@@ -556,9 +570,11 @@ export default function AdminDashboard() {
                                             <td className="px-6 py-4">{userItem.name}</td>
                                             <td className="px-6 py-4">
                                                 <span
-                                                    className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${userItem.role === 'ADMIN'
-                                                        ? 'bg-primary/10 text-primary'
-                                                        : 'bg-muted text-muted-foreground'
+                                                    className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${userItem.role === 'SUPERADMIN'
+                                                            ? 'bg-purple-100 text-purple-800'
+                                                            : userItem.role === 'ADMIN'
+                                                                ? 'bg-primary/10 text-primary'
+                                                                : 'bg-muted text-muted-foreground'
                                                         }`}
                                                 >
                                                     {userItem.role}
@@ -566,13 +582,20 @@ export default function AdminDashboard() {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex gap-2 justify-end">
-                                                    <Button
-                                                        variant={userItem.role === 'ADMIN' ? 'outline' : 'primary'}
-                                                        size="sm"
-                                                        onClick={() => handlePromoteUser(userItem.id, userItem.role)}
-                                                    >
-                                                        {userItem.role === 'ADMIN' ? 'Demote' : 'Promote'}
-                                                    </Button>
+                                                    {user?.role === 'SUPERADMIN' && (
+                                                        <Button
+                                                            variant={userItem.role === 'USER' ? 'primary' : 'outline'}
+                                                            size="sm"
+                                                            onClick={() => handlePromoteUser(userItem.id, userItem.role)}
+                                                            disabled={userItem.id === user?.id}
+                                                        >
+                                                            {userItem.role === 'SUPERADMIN'
+                                                                ? 'Demote to Admin'
+                                                                : userItem.role === 'ADMIN'
+                                                                    ? 'Demote to User'
+                                                                    : 'Promote to Admin'}
+                                                        </Button>
+                                                    )}
                                                     <Button
                                                         variant="destructive"
                                                         size="sm"

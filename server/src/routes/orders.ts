@@ -1,0 +1,142 @@
+import { Router, Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+
+const router = Router();
+const prisma = new PrismaClient();
+
+// Place an order
+router.post('/', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.headers['user-id'] as string;
+        const { address, city, zipCode, country } = req.body;
+
+        if (!userId) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
+        // Get user's cart
+        const cart = await prisma.cart.findUnique({
+            where: { userId },
+            include: {
+                items: {
+                    include: { product: true }
+                }
+            }
+        });
+
+        if (!cart || cart.items.length === 0) {
+            res.status(400).json({ error: 'Cart is empty' });
+            return;
+        }
+
+        // Calculate total
+        const total = cart.items.reduce((sum, item) => {
+            return sum + (item.product.price * item.quantity);
+        }, 0);
+
+        // Create order
+        const order = await prisma.order.create({
+            data: {
+                userId,
+                total,
+                address,
+                city,
+                zipCode,
+                country,
+                items: {
+                    create: cart.items.map(item => ({
+                        productId: item.productId,
+                        quantity: item.quantity,
+                        price: item.product.price
+                    }))
+                }
+            },
+            include: {
+                items: {
+                    include: { product: true }
+                }
+            }
+        });
+
+        // Clear cart
+        await prisma.cartItem.deleteMany({
+            where: { cartId: cart.id }
+        });
+
+        res.status(201).json(order);
+    } catch (error) {
+        console.error('Create order error:', error);
+        res.status(500).json({ error: 'Failed to create order' });
+    }
+});
+
+// Get user's order history
+router.get('/', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.headers['user-id'] as string;
+
+        if (!userId) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
+        const orders = await prisma.order.findMany({
+            where: { userId },
+            include: {
+                items: {
+                    include: { product: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        res.json(orders);
+    } catch (error) {
+        console.error('Get orders error:', error);
+        res.status(500).json({ error: 'Failed to fetch orders' });
+    }
+});
+
+// Admin: Get all orders
+router.get('/all', async (req: Request, res: Response): Promise<void> => {
+    try {
+        // In a real app, verify admin role here
+        const orders = await prisma.order.findMany({
+            include: {
+                user: {
+                    select: { name: true, email: true }
+                },
+                items: {
+                    include: { product: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        res.json(orders);
+    } catch (error) {
+        console.error('Get all orders error:', error);
+        res.status(500).json({ error: 'Failed to fetch all orders' });
+    }
+});
+
+// Admin: Update order status
+router.put('/:id/status', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        const order = await prisma.order.update({
+            where: { id },
+            data: { status }
+        });
+
+        res.json(order);
+    } catch (error) {
+        console.error('Update status error:', error);
+        res.status(500).json({ error: 'Failed to update order status' });
+    }
+});
+
+export default router;

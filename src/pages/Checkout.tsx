@@ -32,21 +32,27 @@ export default function Checkout() {
         e.preventDefault();
         setIsProcessing(true);
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+            const response = await fetch('http://localhost:3000/api/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'user-id': user?.id || ''
+                },
+                body: JSON.stringify(formData)
+            });
 
-        // In a real app, you would send the order to the backend here
-        console.log('Order placed:', {
-            items: cartItems,
-            total: cartTotal,
-            shipping: formData,
-            user: user?.id
-        });
+            if (!response.ok) throw new Error('Failed to place order');
 
-        await clearCart();
-        setIsProcessing(false);
-        alert('Order placed successfully!');
-        navigate('/dashboard');
+            await clearCart();
+            alert('Order placed successfully!');
+            navigate('/dashboard');
+        } catch (error) {
+            console.error('Checkout error:', error);
+            alert('Failed to place order. Please try again.');
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     if (cartItems.length === 0) {

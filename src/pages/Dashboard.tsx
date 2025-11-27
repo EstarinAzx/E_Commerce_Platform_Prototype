@@ -1,34 +1,73 @@
+import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
-import { Users, DollarSign, Activity, CreditCard } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Package, Clock, CheckCircle, XCircle } from 'lucide-react';
+
+interface Order {
+  id: string;
+  status: string;
+  total: number;
+  createdAt: string;
+  items: {
+    id: string;
+    quantity: number;
+    price: number;
+    product: {
+      name: string;
+      imageUrl: string;
+    };
+  }[];
+}
 
 export default function Dashboard() {
-  const stats = [
-    {
-      title: "Total Revenue",
-      value: "$45,231.89",
-      description: "+20.1% from last month",
-      icon: DollarSign,
-    },
-    {
-      title: "Subscriptions",
-      value: "+2350",
-      description: "+180.1% from last month",
-      icon: Users,
-    },
-    {
-      title: "Sales",
-      value: "+12,234",
-      description: "+19% from last month",
-      icon: CreditCard,
-    },
-    {
-      title: "Active Now",
-      value: "+573",
-      description: "+201 since last hour",
-      icon: Activity,
-    },
-  ];
+  const { user } = useAuth();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchOrders();
+    }
+  }, [user]);
+
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/orders', {
+        headers: {
+          'user-id': user?.id || ''
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setOrders(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PENDING': return 'text-yellow-500';
+      case 'PROCESSING': return 'text-blue-500';
+      case 'SHIPPED': return 'text-purple-500';
+      case 'DELIVERED': return 'text-green-500';
+      case 'CANCELLED': return 'text-red-500';
+      default: return 'text-gray-500';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'DELIVERED': return <CheckCircle className="h-5 w-5" />;
+      case 'CANCELLED': return <XCircle className="h-5 w-5" />;
+      case 'PENDING': return <Clock className="h-5 w-5" />;
+      default: return <Package className="h-5 w-5" />;
+    }
+  };
 
   return (
     <Layout>
@@ -36,74 +75,89 @@ export default function Dashboard() {
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
           <p className="text-muted-foreground">
-            Overview of your store's performance.
+            Welcome back, {user?.name}
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={stat.title}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {stat.title}
-                  </CardTitle>
-                  <Icon className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {stat.description}
-                  </p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Card className="col-span-4">
-            <CardHeader>
-              <CardTitle>Overview</CardTitle>
-            </CardHeader>
-            <CardContent className="pl-2">
-              <div className="h-[200px] flex items-center justify-center text-muted-foreground">
-                Chart Placeholder
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="col-span-3">
-            <CardHeader>
-              <CardTitle>Recent Sales</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                You made 265 sales this month.
-              </p>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Orders
+              </CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="space-y-8">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex items-center">
-                    <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                      OM
-                    </div>
-                    <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        Olivia Martin
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        olivia.martin@email.com
-                      </p>
-                    </div>
-                    <div className="ml-auto font-medium">+$1,999.00</div>
-                  </div>
-                ))}
-              </div>
+              <div className="text-2xl font-bold">{orders.length}</div>
             </CardContent>
           </Card>
+          {/* Add more stats cards here if needed */}
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold">Recent Orders</h3>
+          {loading ? (
+            <p>Loading orders...</p>
+          ) : orders.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                No orders yet. Go to the store to place your first order!
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {orders.map((order) => (
+                <Card key={order.id}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <CardTitle className="text-base">
+                          Order #{order.id.slice(0, 8)}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className={`flex items-center gap-2 font-medium ${getStatusColor(order.status)}`}>
+                        {getStatusIcon(order.status)}
+                        {order.status}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {order.items.map((item) => (
+                        <div key={item.id} className="flex items-center gap-4">
+                          <div className="h-12 w-12 rounded bg-muted overflow-hidden">
+                            <img
+                              src={item.product.imageUrl}
+                              alt={item.product.name}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium">{item.product.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              Qty: {item.quantity}
+                            </p>
+                          </div>
+                          <p className="font-medium">
+                            ${(item.price * item.quantity).toFixed(2)}
+                          </p>
+                        </div>
+                      ))}
+                      <div className="pt-4 border-t flex justify-between font-bold">
+                        <span>Total</span>
+                        <span>${order.total.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </Layout>
   );
 }
-

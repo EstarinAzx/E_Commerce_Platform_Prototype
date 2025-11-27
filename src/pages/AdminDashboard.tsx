@@ -16,6 +16,7 @@ interface Product {
     name: string;
     description: string;
     price: number;
+    stock: number;
     imageUrl: string;
     categoryId?: string;
     category?: Category;
@@ -42,6 +43,7 @@ export default function AdminDashboard() {
         name: '',
         description: '',
         price: '',
+        stock: '0',
         imageUrl: '',
         categoryId: '',
     });
@@ -105,7 +107,7 @@ export default function AdminDashboard() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newProduct),
             });
-            setNewProduct({ name: '', description: '', price: '', imageUrl: '', categoryId: '' });
+            setNewProduct({ name: '', description: '', price: '', stock: '0', imageUrl: '', categoryId: '' });
             setShowProductForm(false);
             fetchProducts();
         } catch (error) {
@@ -125,7 +127,9 @@ export default function AdminDashboard() {
                     name: editingProduct.name,
                     description: editingProduct.description,
                     price: editingProduct.price,
+                    stock: editingProduct.stock,
                     imageUrl: editingProduct.imageUrl,
+                    categoryId: editingProduct.categoryId,
                 }),
             });
             setEditingProduct(null);
@@ -312,6 +316,15 @@ export default function AdminDashboard() {
                                             }
                                             required
                                         />
+                                        <Input
+                                            label="Stock"
+                                            type="number"
+                                            value={newProduct.stock}
+                                            onChange={(e) =>
+                                                setNewProduct({ ...newProduct, stock: e.target.value })
+                                            }
+                                            required
+                                        />
                                         <div>
                                             <label className="block text-sm font-medium mb-2">
                                                 Category
@@ -398,6 +411,15 @@ export default function AdminDashboard() {
                                             value={editingProduct.price.toString()}
                                             onChange={(e) =>
                                                 setEditingProduct({ ...editingProduct, price: parseFloat(e.target.value) })
+                                            }
+                                            required
+                                        />
+                                        <Input
+                                            label="Stock"
+                                            type="number"
+                                            value={editingProduct.stock.toString()}
+                                            onChange={(e) =>
+                                                setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) || 0 })
                                             }
                                             required
                                         />
@@ -571,10 +593,10 @@ export default function AdminDashboard() {
                                             <td className="px-6 py-4">
                                                 <span
                                                     className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${userItem.role === 'SUPERADMIN'
-                                                            ? 'bg-purple-100 text-purple-800'
-                                                            : userItem.role === 'ADMIN'
-                                                                ? 'bg-primary/10 text-primary'
-                                                                : 'bg-muted text-muted-foreground'
+                                                        ? 'bg-purple-100 text-purple-800'
+                                                        : userItem.role === 'ADMIN'
+                                                            ? 'bg-primary/10 text-primary'
+                                                            : 'bg-muted text-muted-foreground'
                                                         }`}
                                                 >
                                                     {userItem.role}

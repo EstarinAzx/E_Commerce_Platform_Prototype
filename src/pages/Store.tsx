@@ -15,6 +15,7 @@ interface Product {
     name: string;
     description: string;
     price: number;
+    stock: number;
     imageUrl: string;
     category?: Category;
 }
@@ -186,12 +187,23 @@ export default function Store() {
                                     <p className="text-sm text-muted-foreground line-clamp-2 flex-1">
                                         {product.description}
                                     </p>
+                                    {product.stock <= 10 && (
+                                        <div className={`text-xs font-semibold px-2 py-1 rounded-full text-center ${product.stock === 0
+                                                ? 'bg-red-100 text-red-800'
+                                                : product.stock <= 5
+                                                    ? 'bg-orange-100 text-orange-800'
+                                                    : 'bg-yellow-100 text-yellow-800'
+                                            }`}>
+                                            {product.stock === 0 ? 'Out of Stock' : `Only ${product.stock} left`}
+                                        </div>
+                                    )}
                                     <Button
                                         className="w-full mt-auto"
                                         onClick={() => addToCart(product.id)}
+                                        disabled={product.stock === 0}
                                     >
                                         <ShoppingCart className="mr-2 h-4 w-4" />
-                                        Add to Cart
+                                        {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                                     </Button>
                                 </CardContent>
                             </Card>

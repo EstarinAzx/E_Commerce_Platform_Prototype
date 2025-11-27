@@ -31,6 +31,7 @@ export default function Layout({ children }: LayoutProps) {
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'Store', href: '/store', icon: User },
         { name: 'Orders', href: '/admin/orders', icon: Package },
+        { name: 'Analytics', href: '/admin/stats', icon: LayoutDashboard },
         { name: 'Admin', href: '/admin', icon: Settings },
     ];
 
@@ -69,7 +70,7 @@ export default function Layout({ children }: LayoutProps) {
 
                         <nav className="flex-1 p-4 space-y-1">
                             {navigation
-                                .filter(item => (item.name !== 'Admin' && item.name !== 'Orders') || user?.role === 'ADMIN' || user?.role === 'SUPERADMIN')
+                                .filter(item => (item.name !== 'Admin' && item.name !== 'Orders' && item.name !== 'Analytics') || user?.role === 'ADMIN' || user?.role === 'SUPERADMIN')
                                 .map((item) => {
                                     const Icon = item.icon;
                                     const isActive = location.pathname === item.href;

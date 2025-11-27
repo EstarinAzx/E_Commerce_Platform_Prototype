@@ -10,6 +10,7 @@ import cartRoutes from './routes/cart';
 import orderRoutes from './routes/orders';
 import categoryRoutes from './routes/categories';
 import adminRoutes from './routes/admin';
+import reviewRoutes from './routes/reviews';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok' });

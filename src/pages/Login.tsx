@@ -1,64 +1,85 @@
-import { useState, type FormEvent } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Button } from '../components/Button';
+import { Input } from '../components/Input';
+import { LayoutDashboard } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(email, password);
-    navigate('/dashboard');
+    setIsLoading(true);
+    try {
+      await login(email, password);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Failed to login', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
-            <input
+    <div className="min-h-screen grid lg:grid-cols-2">
+      {/* Left Side - Branding */}
+      <div className="hidden lg:flex flex-col justify-between bg-zinc-900 p-12 text-white">
+        <div className="flex items-center gap-2 text-2xl font-bold">
+          <LayoutDashboard className="h-8 w-8" />
+          <span>MyApp</span>
+        </div>
+        <div>
+          <blockquote className="space-y-2">
+            <p className="text-lg">
+              &ldquo;This library has saved me countless hours of work and
+              helped me deliver stunning designs to my clients faster than
+              ever before.&rdquo;
+            </p>
+            <footer className="text-sm text-zinc-400">Sofia Davis</footer>
+          </blockquote>
+        </div>
+      </div>
+
+      {/* Right Side - Form */}
+      <div className="flex items-center justify-center p-8">
+        <div className="mx-auto w-full max-w-md space-y-6">
+          <div className="space-y-2 text-center">
+            <h1 className="text-3xl font-bold">Welcome back</h1>
+            <p className="text-muted-foreground">
+              Enter your email to sign in to your account
+            </p>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              label="Email"
               type="email"
-              id="email"
+              placeholder="m@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-          </div>
-          <div className="mb-6">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <input
+            <Input
+              label="Password"
               type="password"
-              id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors"
-          >
-            Login
-          </button>
-        </form>
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
-            <Link to="/signup" className="text-blue-500 hover:text-blue-700 font-medium">
-              Sign Up
+            <Button type="submit" className="w-full" isLoading={isLoading}>
+              Sign In
+            </Button>
+          </form>
+          <div className="text-center text-sm">
+            Don&apos;t have an account?{' '}
+            <Link to="/signup" className="underline underline-offset-4 hover:text-primary">
+              Sign up
             </Link>
-          </p>
+          </div>
         </div>
       </div>
     </div>

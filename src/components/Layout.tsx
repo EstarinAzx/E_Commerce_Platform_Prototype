@@ -29,7 +29,8 @@ export default function Layout({ children }: LayoutProps) {
 
     const navigation = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'Store', href: '/store', icon: User },
+        { name: 'Store', href: '/store', icon: ShoppingBag },
+        { name: 'Profile', href: '/profile', icon: User },
         { name: 'Orders', href: '/admin/orders', icon: Package },
         { name: 'Analytics', href: '/admin/stats', icon: LayoutDashboard },
         { name: 'Admin', href: '/admin', icon: Settings },

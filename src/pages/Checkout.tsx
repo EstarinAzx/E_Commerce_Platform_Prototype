@@ -14,7 +14,7 @@ import { API_URL } from '../lib/api';
 // ============================================================================
 // Interfaces
 // ============================================================================
-interface FormData {
+interface CheckoutFormData {
     address: string;
     city: string;
     zipCode: string;

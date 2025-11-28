@@ -8,6 +8,7 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Trash2, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../lib/api';
 
 // ============================================================================
 // Interfaces
@@ -80,7 +81,7 @@ export default function AdminDashboard() {
     // Fetch all products
     const fetchProducts = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/products');
+            const response = await fetch(`${API_URL}/api/products`);
             const data = await response.json();
             setProducts(data);
         } catch (error) {
@@ -91,7 +92,7 @@ export default function AdminDashboard() {
     // Fetch all users
     const fetchUsers = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/users');
+            const response = await fetch(`${API_URL}/api/users`);
             const data = await response.json();
             setUsers(data);
         } catch (error) {
@@ -102,7 +103,7 @@ export default function AdminDashboard() {
     // Fetch all categories
     const fetchCategories = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/categories');
+            const response = await fetch(`${API_URL}/api/categories`);
             const data = await response.json();
             setCategories(data);
         } catch (error) {
@@ -119,7 +120,7 @@ export default function AdminDashboard() {
         const formData = new FormData();
         formData.append('image', file);
 
-        const response = await fetch('http://localhost:3000/api/upload', {
+        const response = await fetch(`${API_URL}/api/upload`, {
             method: 'POST',
             body: formData,
         });
@@ -133,7 +134,7 @@ export default function AdminDashboard() {
     const handleCreateProduct = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await fetch('http://localhost:3000/api/products', {
+            await fetch(`${API_URL}/api/products`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newProduct),
@@ -152,7 +153,7 @@ export default function AdminDashboard() {
         if (!editingProduct) return;
 
         try {
-            await fetch(`http://localhost:3000/api/products/${editingProduct.id}`, {
+            await fetch(`${API_URL}/api/products/${editingProduct.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -175,7 +176,7 @@ export default function AdminDashboard() {
     const handleDeleteProduct = async (id: string) => {
         if (!confirm('Delete this product?')) return;
         try {
-            await fetch(`http://localhost:3000/api/products/${id}`, {
+            await fetch(`${API_URL}/api/products/${id}`, {
                 method: 'DELETE',
             });
             fetchProducts();
@@ -195,7 +196,7 @@ export default function AdminDashboard() {
         if (!confirm(confirmMessage)) return;
 
         try {
-            await fetch(`http://localhost:3000/api/users/${id}`, {
+            await fetch(`${API_URL}/api/users/${id}`, {
                 method: 'DELETE',
             });
 
@@ -215,7 +216,7 @@ export default function AdminDashboard() {
         if (!newCategoryName.trim()) return;
 
         try {
-            await fetch('http://localhost:3000/api/categories', {
+            await fetch(`${API_URL}/api/categories`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: newCategoryName }),
@@ -231,7 +232,7 @@ export default function AdminDashboard() {
     const handleDeleteCategory = async (id: string) => {
         if (!confirm('Delete this category?')) return;
         try {
-            await fetch(`http://localhost:3000/api/categories/${id}`, {
+            await fetch(`${API_URL}/api/categories/${id}`, {
                 method: 'DELETE',
             });
             fetchCategories();
@@ -263,7 +264,7 @@ export default function AdminDashboard() {
         if (!confirm(`Are you sure you want to ${action} this user?`)) return;
 
         try {
-            await fetch(`http://localhost:3000/api/users/${userId}/role`, {
+            await fetch(`${API_URL}/api/users/${userId}/role`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

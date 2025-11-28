@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { Users, Package, ShoppingCart, DollarSign, AlertTriangle, TrendingUp } from 'lucide-react';
+import { API_URL } from '../lib/api';
 
 // ============================================================================
 // Types
@@ -73,7 +74,7 @@ export default function AdminStats() {
     const fetchStats = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:3000/api/admin/stats');
+            const response = await fetch(`${API_URL}/api/admin/stats`);
             const data = await response.json();
 
             setStats(data.stats);

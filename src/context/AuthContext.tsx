@@ -4,6 +4,7 @@
 
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { User, AuthContextType } from '../types/auth';
+import { API_URL } from '../lib/api';
 
 // ============================================================================
 // Interfaces
@@ -61,7 +62,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!storedRefreshToken || !user) return;
 
       try {
-        const response = await fetch('http://localhost:3000/api/auth/refresh-token', {
+        const response = await fetch(`${API_URL}/api/auth/refresh-token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken: storedRefreshToken }),
@@ -93,7 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // --------------------------------------------------------------------------
 
   const login = async (email: string, password: string): Promise<void> => {
-    const response = await fetch('http://localhost:3000/api/auth/login', {
+    const response = await fetch(`${API_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -112,7 +113,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const signup = async (email: string, password: string, name: string, username: string): Promise<void> => {
-    const response = await fetch('http://localhost:3000/api/auth/signup', {
+    const response = await fetch(`${API_URL}/api/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, name, username }),
@@ -134,7 +135,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
-        await fetch('http://localhost:3000/api/auth/logout', {
+        await fetch(`${API_URL}/api/auth/logout`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken }),
@@ -155,7 +156,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const token = localStorage.getItem('token');
       if (!token || !user?.id) return;
 
-      const response = await fetch('http://localhost:3000/api/users/me', {
+      const response = await fetch(`${API_URL}/api/users/me`, {
         headers: {
           'user-id': user.id,
         },

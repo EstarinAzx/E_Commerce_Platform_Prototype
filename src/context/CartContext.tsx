@@ -3,6 +3,7 @@
 // ============================================================================
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { API_URL } from '../lib/api';
 
 // ============================================================================
 // Interfaces/Types
@@ -63,7 +64,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const fetchCart = async () => {
         if (!user) return;
         try {
-            const response = await fetch('http://localhost:3000/api/cart', {
+            const response = await fetch(`${API_URL}/api/cart`, {
                 headers: { 'user-id': user.id } as HeadersInit
             });
             if (response.ok) {
@@ -82,7 +83,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             return;
         }
         try {
-            const response = await fetch('http://localhost:3000/api/cart/add', {
+            const response = await fetch(`${API_URL}/api/cart/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -103,7 +104,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const updateQuantity = async (itemId: string, quantity: number) => {
         if (!user) return;
         try {
-            const response = await fetch(`http://localhost:3000/api/cart/item/${itemId}`, {
+            const response = await fetch(`${API_URL}/api/cart/item/${itemId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -122,7 +123,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const removeFromCart = async (itemId: string) => {
         if (!user) return;
         try {
-            const response = await fetch(`http://localhost:3000/api/cart/item/${itemId}`, {
+            const response = await fetch(`${API_URL}/api/cart/item/${itemId}`, {
                 method: 'DELETE',
                 headers: { 'user-id': user.id } as HeadersInit
             });
@@ -137,7 +138,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const clearCart = async () => {
         if (!user) return;
         try {
-            const response = await fetch('http://localhost:3000/api/cart/clear', {
+            const response = await fetch(`${API_URL}/api/cart/clear`, {
                 method: 'DELETE',
                 headers: { 'user-id': user.id } as HeadersInit
             });

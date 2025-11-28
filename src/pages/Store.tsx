@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { Button } from '../components/Button';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart } from 'lucide-react';
+import { API_URL } from '../lib/api';
 
 // ============================================================================
 // Interfaces
@@ -67,7 +68,7 @@ export default function Store() {
     // ============================================================================
     const fetchCategories = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/categories');
+            const response = await fetch(`${API_URL}/api/categories`);
             const data = await response.json();
             setCategories(data);
         } catch (error) {
@@ -87,7 +88,7 @@ export default function Store() {
             if (priceRange.max) params.append('maxPrice', priceRange.max);
             if (selectedCategory) params.append('categoryId', selectedCategory);
 
-            const response = await fetch(`http://localhost:3000/api/products?${params.toString()}`);
+            const response = await fetch(`${API_URL}/api/products?${params.toString()}`);
             const data = await response.json();
             setProducts(data);
         } catch (error) {

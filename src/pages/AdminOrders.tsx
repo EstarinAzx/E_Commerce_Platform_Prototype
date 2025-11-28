@@ -6,6 +6,7 @@ import Layout from '../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { useAuth } from '../context/AuthContext';
 import { Package, Check, X, Truck, Clock } from 'lucide-react';
+import { API_URL } from '../lib/api';
 
 // ============================================================================
 // Types
@@ -58,7 +59,7 @@ export default function AdminOrders() {
     // ============================================================================
     const fetchOrders = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/orders/all', {
+            const response = await fetch(`${API_URL}/api/orders/all`, {
                 headers: {
                     'user-id': user?.id || ''
                 }
@@ -76,7 +77,7 @@ export default function AdminOrders() {
 
     const updateStatus = async (orderId: string, newStatus: string) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
+            const response = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

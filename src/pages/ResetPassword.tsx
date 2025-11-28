@@ -6,6 +6,7 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { LayoutDashboard, ArrowLeft } from 'lucide-react';
+import { API_URL } from '../lib/api';
 
 // ============================================================================
 // Component
@@ -39,7 +40,7 @@ export default function ResetPassword() {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:3000/api/auth/reset-password', {
+            const response = await fetch(`${API_URL}/api/auth/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token, newPassword }),

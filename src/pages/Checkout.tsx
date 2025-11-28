@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../lib/api';
 
 // ============================================================================
 // Interfaces
@@ -61,7 +62,7 @@ export default function Checkout() {
         setIsProcessing(true);
 
         try {
-            const response = await fetch('http://localhost:3000/api/orders', {
+            const response = await fetch(`${API_URL}/api/orders`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

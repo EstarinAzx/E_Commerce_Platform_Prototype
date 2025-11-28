@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../lib/api';
 
 // ============================================================================
 // Component
@@ -43,7 +44,7 @@ export default function Profile() {
     // ============================================================================
     const fetchProfile = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/users/me', {
+            const response = await fetch(`${API_URL}/api/users/me`, {
                 headers: {
                     'user-id': user?.id || '',
                 },
@@ -69,7 +70,7 @@ export default function Profile() {
         setMessage('');
 
         try {
-            const response = await fetch('http://localhost:3000/api/users/me', {
+            const response = await fetch(`${API_URL}/api/users/me`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -104,7 +105,7 @@ export default function Profile() {
         }
 
         try {
-            const response = await fetch('http://localhost:3000/api/users/me/password', {
+            const response = await fetch(`${API_URL}/api/users/me/password`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -141,7 +142,7 @@ export default function Profile() {
             const formData = new FormData();
             formData.append('image', file);
 
-            const response = await fetch('http://localhost:3000/api/upload', {
+            const response = await fetch(`${API_URL}/api/upload`, {
                 method: 'POST',
                 body: formData,
             });
@@ -152,7 +153,7 @@ export default function Profile() {
             const imageUrl = data.imageUrl;
 
             // Update profile with new picture
-            const updateResponse = await fetch('http://localhost:3000/api/users/me', {
+            const updateResponse = await fetch(`${API_URL}/api/users/me`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

@@ -6,6 +6,7 @@ import Layout from '../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/Card';
 import { useEffect, useState } from 'react';
 import { Package, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { API_URL } from '../lib/api';
 
 // ============================================================================
 // Interfaces
@@ -42,7 +43,7 @@ export default function Dashboard() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/orders', {
+      const response = await fetch(`${API_URL}/api/orders`, {
         headers: {
           'user-id': user?.id || ''
         }

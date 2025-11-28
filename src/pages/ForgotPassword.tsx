@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { LayoutDashboard, ArrowLeft } from 'lucide-react';
+import { API_URL } from '../lib/api';
 
 // ============================================================================
 // Component
@@ -29,7 +30,7 @@ export default function ForgotPassword() {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:3000/api/auth/forgot-password', {
+            const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),

@@ -8,6 +8,7 @@ import { Button } from '../components/Button';
 import { useCart } from '../context/CartContext';
 import { ShoppingCart } from 'lucide-react';
 import { API_URL } from '../lib/api';
+import ProductModal from '../components/ProductModal';
 
 // ============================================================================
 // Interfaces
@@ -38,6 +39,7 @@ export default function Store() {
     const [priceRange, setPriceRange] = useState({ min: '', max: '' });
     const [selectedCategory, setSelectedCategory] = useState('');
     const [categories, setCategories] = useState<Category[]>([]);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
     const [debouncedSearch, setDebouncedSearch] = useState(search);
 
@@ -198,7 +200,10 @@ export default function Store() {
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {products.map((product) => (
                             <Card key={product.id} className="flex flex-col">
-                                <div className="aspect-video overflow-hidden rounded-t-lg bg-muted">
+                                <div
+                                    className="aspect-video overflow-hidden rounded-t-lg bg-muted cursor-pointer"
+                                    onClick={() => setSelectedProduct(product)}
+                                >
                                     <img
                                         src={product.imageUrl}
                                         alt={product.name}
@@ -217,10 +222,10 @@ export default function Store() {
                                     </p>
                                     {product.stock <= 10 && (
                                         <div className={`text-xs font-semibold px-2 py-1 rounded-full text-center ${product.stock === 0
-                                                ? 'bg-red-100 text-red-800'
-                                                : product.stock <= 5
-                                                    ? 'bg-orange-100 text-orange-800'
-                                                    : 'bg-yellow-100 text-yellow-800'
+                                            ? 'bg-red-100 text-red-800'
+                                            : product.stock <= 5
+                                                ? 'bg-orange-100 text-orange-800'
+                                                : 'bg-yellow-100 text-yellow-800'
                                             }`}>
                                             {product.stock === 0 ? 'Out of Stock' : `Only ${product.stock} left`}
                                         </div>
@@ -238,6 +243,14 @@ export default function Store() {
                         ))}
                     </div>
                 )}
+
+                {/* Product Detail Modal */}
+                <ProductModal
+                    product={selectedProduct}
+                    isOpen={!!selectedProduct}
+                    onClose={() => setSelectedProduct(null)}
+                    onAddToCart={addToCart}
+                />
             </div>
         </Layout>
     );

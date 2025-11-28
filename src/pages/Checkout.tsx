@@ -12,19 +12,6 @@ import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../lib/api';
 
 // ============================================================================
-// Interfaces
-// ============================================================================
-interface CheckoutFormData {
-    address: string;
-    city: string;
-    zipCode: string;
-    country: string;
-    cardNumber: string;
-    expiryDate: string;
-    cvv: string;
-}
-
-// ============================================================================
 // Component & Hooks
 // ============================================================================
 export default function Checkout() {

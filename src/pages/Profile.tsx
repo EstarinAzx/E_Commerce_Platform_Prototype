@@ -6,7 +6,7 @@ import { Input } from '../components/Input';
 import { useAuth } from '../context/AuthContext';
 
 export default function Profile() {
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
     const [profile, setProfile] = useState({
         name: '',
         email: '',
@@ -62,6 +62,7 @@ export default function Profile() {
 
             if (!response.ok) throw new Error('Update failed');
 
+            await refreshUser();
             setMessage('Profile updated successfully!');
             setTimeout(() => setMessage(''), 3000);
         } catch (err) {
@@ -145,6 +146,7 @@ export default function Profile() {
             if (!updateResponse.ok) throw new Error('Failed to update profile picture');
 
             setProfile({ ...profile, profilePicture: imageUrl });
+            await refreshUser();
             setMessage('Profile picture updated successfully!');
             setTimeout(() => setMessage(''), 3000);
         } catch (err: any) {
@@ -223,21 +225,32 @@ export default function Profile() {
                                     />
                                 </div>
                             )}
-                            <div>
-                                <label className="block text-sm font-medium mb-2">
-                                    Upload New Picture
+                            <div className="flex flex-col items-center gap-4">
+                                <label className="cursor-pointer">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) handleImageUpload(file);
+                                        }}
+                                        disabled={uploading}
+                                    />
+                                    <div className="flex flex-col items-center gap-2">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="pointer-events-none"
+                                            isLoading={uploading}
+                                        >
+                                            {uploading ? 'Uploading...' : 'Choose New Picture'}
+                                        </Button>
+                                        <p className="text-xs text-muted-foreground">
+                                            JPG, PNG or GIF. Max 5MB.
+                                        </p>
+                                    </div>
                                 </label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) handleImageUpload(file);
-                                    }}
-                                    disabled={uploading}
-                                    className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 disabled:opacity-50"
-                                />
-                                {uploading && <p className="text-sm text-muted-foreground mt-2">Uploading...</p>}
                             </div>
                         </div>
                     </CardContent>

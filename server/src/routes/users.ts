@@ -81,7 +81,7 @@ router.put('/me', async (req: Request, res: Response) => {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        const { name, email, username } = req.body;
+        const { name, email, username, profilePicture } = req.body;
 
         // Validate username if provided
         if (username) {
@@ -107,7 +107,7 @@ router.put('/me', async (req: Request, res: Response) => {
 
         const user = await prisma.user.update({
             where: { id: userId },
-            data: { name, email, username },
+            data: { name, email, username, profilePicture },
             select: {
                 id: true,
                 email: true,

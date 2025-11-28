@@ -96,8 +96,16 @@ export default function Layout({ children }: LayoutProps) {
                                 to="/profile"
                                 className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-accent transition-colors group"
                             >
-                                <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                                    {user?.name?.[0] || 'U'}
+                                <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold group-hover:bg-primary group-hover:text-primary-foreground transition-colors overflow-hidden">
+                                    {user?.profilePicture ? (
+                                        <img
+                                            src={user.profilePicture}
+                                            alt={user.name}
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        <span>{user?.name?.[0] || 'U'}</span>
+                                    )}
                                 </div>
                                 <div className="flex-1 min-w-0 text-left">
                                     <p className="text-sm font-medium truncate text-foreground">{user?.name}</p>

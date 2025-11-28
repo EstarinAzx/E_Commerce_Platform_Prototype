@@ -4,6 +4,7 @@ export interface User {
   name: string;
   username?: string;
   role?: string;
+  profilePicture?: string;
 }
 
 export interface AuthContextType {
@@ -11,5 +12,6 @@ export interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name: string, username: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
 }

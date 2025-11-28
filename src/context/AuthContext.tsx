@@ -70,6 +70,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
   };
 
+  const refreshUser = async (): Promise<void> => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token || !user?.id) return;
+
+      const response = await fetch('http://localhost:3000/api/users/me', {
+        headers: {
+          'user-id': user.id,
+        },
+      });
+
+      if (response.ok) {
+        const updatedUser = await response.json();
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+    }
+  };
+
   const isAuthenticated = !!user;
 
   if (isLoading) {
@@ -77,7 +98,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, refreshUser, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );

@@ -42,6 +42,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const data = await response.json();
     localStorage.setItem('token', data.token);
+    localStorage.setItem('refreshToken', data.refreshToken);
     localStorage.setItem('user', JSON.stringify(data.user));
     setUser(data.user);
   };
@@ -60,15 +61,64 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const data = await response.json();
     localStorage.setItem('token', data.token);
+    localStorage.setItem('refreshToken', data.refreshToken);
     localStorage.setItem('user', JSON.stringify(data.user));
     setUser(data.user);
   };
 
-  const logout = (): void => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
+  const logout = async (): Promise<void> => {
+    try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        await fetch('http://localhost:3000/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken }),
+        });
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      setUser(null);
+    }
   };
+
+  // Silent Refresh Logic
+  useEffect(() => {
+    const refreshToken = async () => {
+      const storedRefreshToken = localStorage.getItem('refreshToken');
+      if (!storedRefreshToken || !user) return;
+
+      try {
+        const response = await fetch('http://localhost:3000/api/auth/refresh-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken: storedRefreshToken }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem('token', data.token);
+        } else {
+          // If refresh fails (e.g. expired), logout
+          logout();
+        }
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+        logout();
+      }
+    };
+
+    // Refresh on mount and then every 50 minutes (token expires in 60m)
+    if (user) {
+      refreshToken();
+      const interval = setInterval(refreshToken, 50 * 60 * 1000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
 
   const refreshUser = async (): Promise<void> => {
     try {
